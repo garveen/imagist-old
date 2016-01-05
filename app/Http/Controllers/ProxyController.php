@@ -16,7 +16,6 @@ use Composer\Repository\CompositeRepository;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Composer\DependencyResolver\Pool;
-use Cache;
 use Storage;
 
 class ProxyController extends Controller
@@ -59,6 +58,43 @@ class ProxyController extends Controller
 
     public function package($info)
     {
+
+        preg_match('{^(?<name>.*)\$(?<hash>.*)\.json$}i', $info, $matches);
+        $hash = $matches['hash'];
+        $name = $matches['name'];
+        $filename = 'p/hash/' . substr($hash, 0, 2) . '/' . substr($hash, 2, 2) . '/' . hash('sha256', $hash . $name) . '.json';
+        if (!Storage::has($filename)) {
+            $repos = $this->getRepos();
+            $installedRepo = new CompositeRepository($repos);
+            $pool = new Pool('dev');
+            $pool->addRepository($installedRepo);
+            $matches = $pool->whatProvides($name, null, true);
+            if (!$matches) {
+                return '{}';
+            } else {
+                $match = $matches[0];
+                $repo = $match->getRepository();
+                $ref = new \ReflectionProperty($repo, 'providersUrl');
+                $ref->setAccessible(true);
+                $providersUrl = $ref->getValue($repo);
+
+                $ref = new \ReflectionProperty($repo, 'cache');
+                $ref->setAccessible(true);
+                $cache = $ref->getValue($repo);
+
+                $url = str_replace(array('%package%', '%hash%'), array($name, $hash), $providersUrl);
+                $cacheKey = 'provider-' . strtr($name, '/', '$') . '.json';
+                if ($cache->sha256($cacheKey) === $hash) {
+                    $packages = $cache->read($cacheKey);
+                }
+                if (!isset($packages) && empty($packages)) {
+                    throw new Exception("Cache should exists, please report this issue on github", 1);
+                }
+                Storage::put($filename, $packages);
+            }
+
+        }
+        return Storage::get($filename);
 
     }
 
