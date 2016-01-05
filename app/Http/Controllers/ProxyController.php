@@ -36,7 +36,6 @@ class ProxyController extends Controller
 
         $repos = $this->getRepos();
         foreach ($repos as $repo) {
-
             $repoConfig = $repo->getRepoConfig();
             $repoName = $repo->name;
             $repo->getProviderNames();
@@ -50,9 +49,10 @@ class ProxyController extends Controller
             $file = "p/{$repoName}/all\${$sha256}.json";
             Storage::put($file, $json);
 
-            $all['provider-includes'][$file] = ['sha256' => $sha256];
+            $packages['provider-includes'][$file] = ['sha256' => $sha256];
         }
         Storage::put("packages.json", json_encode($packages));
+        return $packages;
 
     }
 
