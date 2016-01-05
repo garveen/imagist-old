@@ -68,7 +68,7 @@ class ProxyController extends Controller
             $installedRepo = new CompositeRepository($repos);
             $pool = new Pool('dev');
             $pool->addRepository($installedRepo);
-            $matches = $pool->whatProvides($name, null, true);
+            $matches = $pool->whatProvides($name, null);
             if (!$matches) {
                 return '{}';
             } else {
