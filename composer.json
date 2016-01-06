@@ -1,7 +1,7 @@
 {
-    "name": "laravel/laravel",
-    "description": "The Laravel Framework.",
-    "keywords": ["framework", "laravel"],
+    "name": "acabin/imagist",
+    "description": "Image the Packagist",
+    "keywords": ["image", "packagist", "proxy"],
     "license": "MIT",
     "type": "project",
     "require": {
