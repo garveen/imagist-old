@@ -15,7 +15,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/generate', 'ProxyController@generate');
 Route::get('/p/{info}', 'ProxyController@package')->where('info', '(.*)');
 
 
