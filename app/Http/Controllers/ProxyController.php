@@ -36,7 +36,6 @@ class ProxyController extends Controller
 
         $repos = $this->getRepos();
         foreach ($repos as $repo) {
-            $repoConfig = $repo->getRepoConfig();
             $repoName = $repo->name;
             $repo->getProviderNames();
             // do some hack
@@ -105,17 +104,23 @@ class ProxyController extends Controller
         $helperSet = new HelperSet;
 
         $io = new ConsoleIO($input, $output, $helperSet);
-
-        putenv('COMPOSER=../composer.json');
+        if(!file_exists('composer.json')) {
+            putenv('COMPOSER=../composer.json');
+        }
 
         $composer = Factory::create($io);
         $config = $composer->getConfig();
         $repos = $config->getRepositories();
+
+
         foreach ($repos as &$repo) {
             $type = ucfirst($repo['type']);
             $type = "Composer\\Repository\\{$type}Repository";
             $repo = new $type($repo, $io, $config);
-            $repo->name = preg_replace(['{^https?://}i', '{[^a-z0-9._]}i'], ['', '-'], $repo->getRepoConfig()['url']);
+            $ref = new \ReflectionProperty($repo, 'url');
+            $ref->setAccessible(true);
+            $url = $ref->getValue($repo);
+            $repo->name = preg_replace(['{^https?://}i', '{[^a-z0-9._]}i'], ['', '-'], $url);
         }
         return $repos;
     }
