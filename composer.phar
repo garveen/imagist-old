@@ -1,0 +1,7 @@
+<?php
+array_shift($_SERVER['argv']);
+
+array_unshift($_SERVER['argv'], 'composer');
+array_unshift($_SERVER['argv'], 'artisan');
+
+require('artisan');
